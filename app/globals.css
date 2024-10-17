@@ -9,8 +9,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* --background: #0a0a0a;
+    --foreground: #ededed; */
   }
 }
 
@@ -23,5 +23,27 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer components {
+  .sidebar-icon {
+    @apply 
+      relative flex items-center justify-center
+      h-12 w-12 mt-2 mb-2 mx-auto shadow-lg
+      bg-gray-700 text-gray-200
+      hover:bg-gray-600 hover:text-white
+      rounded-3xl hover:rounded-xl
+      transition-all duration-300 ease-linear
+      cursor-pointer;
+  }
+
+  .sidebar-tooltip {
+    @apply
+      absolute w-auto p-2 m-2 min-w-10 left-14 
+      rounded-md shadow-md
+      text-white bg-gray-800
+      text-xs font-bold
+      transition-all duration-100 scale-0 origin-left;
   }
 }
