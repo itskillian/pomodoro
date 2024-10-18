@@ -7,7 +7,7 @@ export default function Pomodoro() {
   // main component to handle state
 
   // temp vars
-  let workDuration = 1500;
+  let workDuration = 10;
 
   // state
   const [timeLeft, setTimeLeft] = useState(workDuration);
@@ -29,18 +29,21 @@ export default function Pomodoro() {
   }
   const skipSession = () => {
     setIsRunning(false);
-    setIsWorkSession(!isWorkSession);
-    setTimeLeft(!isWorkSession ? 1500 : 300);
+    setIsWorkSession(prevIsWorkSession => {
+      setTimeLeft(prevIsWorkSession ? 300 : 1500);
+      return !prevIsWorkSession;
+    });
   }
 
   return (
-    <div className="container mx-auto flex flex-col text-center text-black">
-      <div className="w-1/2 mx-auto my-4">
+    <div className="container mx-auto flex h-screen text-center text-black">
+      <div className="max-w-1/2 m-auto pb-16">
         <Timer
           timeLeft={timeLeft}
           isWorkSession={isWorkSession}
           isRunning={isRunning}
           setTimeLeft={setTimeLeft}
+          setIsWorkSession={setIsWorkSession}
           setIsRunning={setIsRunning}
         />
         <Controls 
@@ -49,8 +52,8 @@ export default function Pomodoro() {
           resetTimer={resetTimer}
           skipSession={skipSession}
         />
-        <SessionCounter />
-        <Settings />
+        {/* <SessionCounter />
+        <Settings /> */}
       </div>
     </div>
   );
@@ -77,7 +80,7 @@ function SideBar () {
   );
 }
 
-function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, setIsRunning }) {
+function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, setIsWorkSession, setIsRunning }) {
   // countdown timer
   useEffect(() => {
     let countdownInterval;
@@ -89,21 +92,25 @@ function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, setIsRunning 
     } else if (timeLeft === 0) {
       clearInterval(countdownInterval);
       setIsRunning(false);
+      setIsWorkSession(prevIsWorkSession => {
+        setTimeLeft(prevIsWorkSession ? 300 : 1500);
+        return !prevIsWorkSession;
+      });
     }
     return () => clearInterval(countdownInterval);
-  }, [isRunning, timeLeft]);
+  }, [isRunning, timeLeft, isWorkSession]);
 
   let formattedTimeLeft = formatTime(timeLeft);
 
   return (
-    <div className="m-4">
-      <div className="m-4 text-xl">
+    <>
+      <div className="m-4 text-lg">
         {isWorkSession ? ("Work Session") : ("On Break")}
       </div>
-      <div className="text-8xl">
+      <div className="m-4 text-8xl">
           { formattedTimeLeft }
         </div>
-    </div>
+    </>
   );
 }
 
@@ -112,11 +119,11 @@ function Controls ({ startTimer, stopTimer, resetTimer, skipSession }) {
   // props: isRunning, isWorkSession
   // callbacks: onStart, onStop, onReset, onSkip
   return (
-    <div className="flex justify-evenly text-xl">
-      <button onClick={startTimer} className="py-2 px-3 bg-gray-200 rounded-xl">Start</button>
-      <button onClick={stopTimer} className="p-2 px-3 bg-gray-200 rounded-xl">Stop</button>
-      <button onClick={resetTimer} className="p-2 px-3 bg-gray-200 rounded-xl">Reset</button>
-      <button onClick={skipSession} className="p-2 px-3 bg-gray-200 rounded-xl">Skip</button>
+    <div className="m-4 flex justify-between text-xl">
+      <button onClick={startTimer} className="mx-4 py-2 px-3 bg-gray-200 rounded-xl">Start</button>
+      <button onClick={stopTimer} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Stop</button>
+      <button onClick={resetTimer} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Reset</button>
+      <button onClick={skipSession} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Skip</button>
     </div>
   );
 }
