@@ -5,35 +5,60 @@ import { FaHome, FaRegClock } from "react-icons/fa";
 
 export default function Pomodoro() {
   // main component to handle state
-
-  // temp vars
-  let workDuration = 10;
-
   // state
+  const [workDuration, setWorkDuration] = useState(1500);
   const [timeLeft, setTimeLeft] = useState(workDuration);
   const [isRunning, setIsRunning] = useState(false);
   const [isWorkSession, setIsWorkSession] = useState(true);
-  //const [workDuration, setWorkDuration] = useState(1500);
-  //const [breakDuration, setBreakDuration] = useState(300);
+  const [sessionCount, setSessionCount] = useState(0);
+  const [sessionDuration, setSessionDuration] = useState(0);
+  const [breakDuration, setBreakDuration] = useState(300);
 
+  // misc functions
+  const incrementSessionCount = () => {
+    setSessionCount(prevSessionCount => prevSessionCount + 1);
+  };
+  const incrementSessionDuration = (workDuration, timeLeft) => {
+    setSessionDuration(prevSessionDuration => prevSessionDuration + (workDuration - timeLeft));
+  };
+  const handleWorkInputChange = (event) => {
+    const newWorkDuration = event.target.value * 60;
+    setWorkDuration(newWorkDuration);
+    
+    if (!isRunning && isWorkSession) {
+      setTimeLeft(newWorkDuration);
+    }
+  };
+  const handleBreakInputChange = (event) => {
+    const newBreakDuration = event.target.value * 60;
+    setBreakDuration(newBreakDuration);
+    
+    if (!isRunning && !isWorkSession) {
+      setTimeLeft(newBreakDuration);
+    }
+  };
   // handlers
   const startTimer = () => {
     setIsRunning(true);
-  }
+  };
   const stopTimer = () => {
     setIsRunning(false);
-  }
+  };
   const resetTimer = () => {
     setIsRunning(false);
-    setTimeLeft(isWorkSession ? 1500 : 300);
-  }
+    setTimeLeft(isWorkSession ? workDuration : breakDuration);
+  };
   const skipSession = () => {
     setIsRunning(false);
+    if (isWorkSession) {
+      incrementSessionCount();
+      incrementSessionDuration(workDuration, timeLeft);
+    }
     setIsWorkSession(prevIsWorkSession => {
-      setTimeLeft(prevIsWorkSession ? 300 : 1500);
+      setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
       return !prevIsWorkSession;
     });
-  }
+  };
 
   return (
     <div className="container mx-auto flex h-screen text-center text-black">
@@ -42,6 +67,9 @@ export default function Pomodoro() {
           timeLeft={timeLeft}
           isWorkSession={isWorkSession}
           isRunning={isRunning}
+          workDuration={workDuration}
+          incrementSessionCount={incrementSessionCount}
+          incrementSessionDuration={incrementSessionDuration}
           setTimeLeft={setTimeLeft}
           setIsWorkSession={setIsWorkSession}
           setIsRunning={setIsRunning}
@@ -52,8 +80,14 @@ export default function Pomodoro() {
           resetTimer={resetTimer}
           skipSession={skipSession}
         />
-        {/* <SessionCounter />
-        <Settings /> */}
+        <SessionCounter 
+          sessionCount={sessionCount}
+          sessionDuration={sessionDuration}
+        />
+        <Settings 
+          handleWorkInputChange={handleWorkInputChange}
+          handleBreakInputChange={handleBreakInputChange}
+        />
       </div>
     </div>
   );
@@ -80,7 +114,7 @@ function SideBar () {
   );
 }
 
-function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, setIsWorkSession, setIsRunning }) {
+function Timer ({ timeLeft, isWorkSession, isRunning, workDuration, incrementSessionCount, incrementSessionDuration, setTimeLeft, setIsWorkSession, setIsRunning }) {
   // countdown timer
   useEffect(() => {
     let countdownInterval;
@@ -92,8 +126,12 @@ function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, setIsWorkSess
     } else if (timeLeft === 0) {
       clearInterval(countdownInterval);
       setIsRunning(false);
+      if (isWorkSession) {
+        incrementSessionCount();
+        incrementSessionDuration(workDuration, timeLeft);
+      }
       setIsWorkSession(prevIsWorkSession => {
-        setTimeLeft(prevIsWorkSession ? 300 : 1500);
+        setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
         return !prevIsWorkSession;
       });
     }
@@ -128,38 +166,77 @@ function Controls ({ startTimer, stopTimer, resetTimer, skipSession }) {
   );
 }
 
-function SessionCounter () {
-  // tracks statistics
-  // props: totalWorkTime, sessionCount
-  // optional prop: totalBreakTime
-  // state:
+function SessionCounter ({ sessionCount, sessionDuration }) {
+  // track sessions & duration
+  let formattedSessionDuration = formatTime(sessionDuration);
   return (
-    <>
-      <p>Session Count: #</p>
-      <p>Total working time: 00:00</p>
-    </>
+    <div className="min-w-max flex justify-evenly m-4">
+      <div className="flex flex-col">
+        <div className="font-bold">Session Count</div>
+        <div className="text-2xl font-bold">{ sessionCount }</div>
+      </div>
+      <div className="flex flex-col">
+        <div className="font-bold">Total Working Time</div>
+        <div className="text-2xl font-bold">{ formattedSessionDuration }</div>
+      </div>
+    </div>
   );
 }
 
-function Settings () {
+function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
   // settings to adjust timer
+  
   // props: workDuration, breakDuration
   // callbacks: onWorkDurationChange, onBreakDurationChange
   return (
     <>
-      <button>Settings</button>
-      <div>
-        <form>
-          <label htmlFor="">Work Duration</label>
-          <input type="number" />
-        </form>
-        <form>
-          <label htmlFor="">Break Duration</label>
-          <input type="number" />
-        </form>
+      <div className="flex items-center justify-between">
+        <label htmlFor="work-duration">Work Duration:</label>
+        <input 
+          type="number" 
+          name="work-duration" 
+          id="work-duration" 
+          className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
+          defaultValue={25}
+          onChange={handleWorkInputChange}
+        />
+        <label htmlFor="work-duration">Break Duration:</label>
+        <input 
+          type="number" 
+          name="break-duration" 
+          id="break-duration" 
+          className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
+          defaultValue={5}
+          onChange={handleBreakInputChange}
+        />
       </div>
+      {/* <div>
+        <div className="flex justify-evenly m-4">
+          <div>
+            <input className="mr-1" type="checkbox" id="opt-1"/>
+            <label htmlFor="opt-1">Auto mode</label>
+          </div>
+          <div>
+            <input className="mr-1"type="checkbox" id="opt-2"/>
+            <label htmlFor="opt-1">Sound</label>
+          </div>
+          <div>
+            <input className="mr-1"type="checkbox" id="opt-3"/>
+            <label htmlFor="opt-1">Option 3</label>
+          </div>
+          <div>
+            <input className="mr-1"type="checkbox" id="opt-4"/>
+            <label htmlFor="opt-1">Option 4</label>
+          </div>
+        </div>
+      </div> */}
     </>
   );
+}
+
+function Statistics () {
+  // average time per work session
+  // total break time
 }
 
 function formatTime(seconds) {
