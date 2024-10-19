@@ -7,39 +7,45 @@ export default function Pomodoro() {
   // main component to handle state
   // state
   const [workDuration, setWorkDuration] = useState(1500);
+  const [breakDuration, setBreakDuration] = useState(300);
   const [timeLeft, setTimeLeft] = useState(workDuration);
+  const [initTimeLeft, setInitTimeLeft] = useState(workDuration);
   const [isRunning, setIsRunning] = useState(false);
   const [isWorkSession, setIsWorkSession] = useState(true);
   const [sessionCount, setSessionCount] = useState(0);
   const [sessionDuration, setSessionDuration] = useState(0);
-  const [breakDuration, setBreakDuration] = useState(300);
 
   // misc functions
   const incrementSessionCount = () => {
     setSessionCount(prevSessionCount => prevSessionCount + 1);
   };
-  const incrementSessionDuration = (workDuration, timeLeft) => {
-    setSessionDuration(prevSessionDuration => prevSessionDuration + (workDuration - timeLeft));
+  const incrementSessionDuration = (initTimeLeft, timeLeft) => {
+    if (initTimeLeft !== timeLeft) {
+      setSessionDuration(prevSessionDuration => prevSessionDuration + (initTimeLeft - timeLeft));
+    }
   };
+  
+  // handlers
   const handleWorkInputChange = (event) => {
     const newWorkDuration = event.target.value * 60;
     setWorkDuration(newWorkDuration);
-    
-    if (!isRunning && isWorkSession) {
-      setTimeLeft(newWorkDuration);
-    }
-  };
+    };
   const handleBreakInputChange = (event) => {
     const newBreakDuration = event.target.value * 60;
     setBreakDuration(newBreakDuration);
-    
-    if (!isRunning && !isWorkSession) {
-      setTimeLeft(newBreakDuration);
-    }
   };
-  // handlers
+  useEffect(() => {
+    if (!isRunning && isWorkSession) {
+      setTimeLeft(workDuration);
+      setInitTimeLeft(workDuration);
+    } else if (!isRunning && !isWorkSession) {
+      setTimeLeft(breakDuration);
+    }
+  }, [workDuration, breakDuration, isWorkSession]);
+  
   const startTimer = () => {
     setIsRunning(true);
+    setInitTimeLeft(workDuration)
   };
   const stopTimer = () => {
     setIsRunning(false);
@@ -52,7 +58,7 @@ export default function Pomodoro() {
     setIsRunning(false);
     if (isWorkSession) {
       incrementSessionCount();
-      incrementSessionDuration(workDuration, timeLeft);
+      incrementSessionDuration(initTimeLeft, timeLeft);
     }
     setIsWorkSession(prevIsWorkSession => {
       setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
@@ -67,12 +73,8 @@ export default function Pomodoro() {
           timeLeft={timeLeft}
           isWorkSession={isWorkSession}
           isRunning={isRunning}
-          workDuration={workDuration}
-          incrementSessionCount={incrementSessionCount}
-          incrementSessionDuration={incrementSessionDuration}
           setTimeLeft={setTimeLeft}
-          setIsWorkSession={setIsWorkSession}
-          setIsRunning={setIsRunning}
+          skipSession={skipSession}
         />
         <Controls 
           startTimer={startTimer}
@@ -114,7 +116,7 @@ function SideBar () {
   );
 }
 
-function Timer ({ timeLeft, isWorkSession, isRunning, workDuration, incrementSessionCount, incrementSessionDuration, setTimeLeft, setIsWorkSession, setIsRunning }) {
+function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, skipSession }) {
   // countdown timer
   useEffect(() => {
     let countdownInterval;
@@ -125,15 +127,7 @@ function Timer ({ timeLeft, isWorkSession, isRunning, workDuration, incrementSes
       }, 1000);
     } else if (timeLeft === 0) {
       clearInterval(countdownInterval);
-      setIsRunning(false);
-      if (isWorkSession) {
-        incrementSessionCount();
-        incrementSessionDuration(workDuration, timeLeft);
-      }
-      setIsWorkSession(prevIsWorkSession => {
-        setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
-        return !prevIsWorkSession;
-      });
+      skipSession();
     }
     return () => clearInterval(countdownInterval);
   }, [isRunning, timeLeft, isWorkSession]);
@@ -210,26 +204,26 @@ function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
           onChange={handleBreakInputChange}
         />
       </div>
-      {/* <div>
+      <div>
         <div className="flex justify-evenly m-4">
           <div>
             <input className="mr-1" type="checkbox" id="opt-1"/>
-            <label htmlFor="opt-1">Auto mode</label>
+            <label htmlFor="opt-1">Auto break</label>
           </div>
           <div>
             <input className="mr-1"type="checkbox" id="opt-2"/>
-            <label htmlFor="opt-1">Sound</label>
+            <label htmlFor="opt-1">Auto work</label>
           </div>
-          <div>
+          {/* <div>
             <input className="mr-1"type="checkbox" id="opt-3"/>
             <label htmlFor="opt-1">Option 3</label>
           </div>
           <div>
             <input className="mr-1"type="checkbox" id="opt-4"/>
             <label htmlFor="opt-1">Option 4</label>
-          </div>
+          </div> */}
         </div>
-      </div> */}
+      </div>
     </>
   );
 }
