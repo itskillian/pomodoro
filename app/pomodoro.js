@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { FaHome, FaRegClock } from "react-icons/fa";
 
 export default function Pomodoro() {
-  // main component to handle state
   // state
   const [workDuration, setWorkDuration] = useState(1500);
   const [breakDuration, setBreakDuration] = useState(300);
@@ -14,6 +13,62 @@ export default function Pomodoro() {
   const [isWorkSession, setIsWorkSession] = useState(true);
   const [sessionCount, setSessionCount] = useState(0);
   const [sessionDuration, setSessionDuration] = useState(0);
+  
+  // local storage reads (on mount)
+  useEffect(() => {
+    const savedWorkDuration = localStorage.getItem('workDuration');
+    console.log(`get from localStorage: ${savedWorkDuration}`);
+
+    if (savedWorkDuration) {
+      setWorkDuration(JSON.parse(savedWorkDuration));
+      console.log(`setting workDuration to saved value: ${savedWorkDuration}`)
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedBreakDuration = localStorage.getItem('breakDuration');
+    if (savedBreakDuration) setBreakDuration(JSON.parse(savedBreakDuration));
+    
+    const savedSessionCount = localStorage.getItem('sessionCount');
+    if (savedSessionCount) setSessionCount(JSON.parse(savedSessionCount));
+    
+    const savedSessionDuration = localStorage.getItem('sessionDuration');
+    if (savedSessionDuration) setSessionDuration(JSON.parse(savedSessionDuration));
+  }, []);
+
+  // local storage writes
+  useEffect(() => {
+    if (workDuration !== null) {
+      // console.log(`workDuration before setItem: ${workDuration}`)
+      localStorage.setItem('workDuration', JSON.stringify(workDuration));
+      // console.log(`set in localStorage: ${localStorage.getItem('workDuration')}`)
+    }
+  }, [workDuration]);
+
+  useEffect(() => {
+    localStorage.setItem('breakDuration', JSON.stringify(breakDuration));
+  }, [breakDuration]);
+
+  useEffect(() => {
+    localStorage.setItem('sessionCount', JSON.stringify(sessionCount));
+  }, [sessionCount]);
+
+  useEffect(() => {
+    localStorage.setItem('sessionDuration', JSON.stringify(sessionDuration));
+  }, [sessionDuration]);
+
+  // useEffect for settings changes
+  // this is necessary for realtime timer update, and proper total working time calculation 
+  useEffect(() => {
+    if (!isRunning) {
+      // update timer display when paused
+      const newTimeLeft = isWorkSession ? workDuration : breakDuration;
+      setTimeLeft(newTimeLeft);
+
+      // set var for sessionDuration calcs
+      if (isWorkSession) setInitTimeLeft(workDuration);
+    }
+  }, [workDuration, breakDuration, isWorkSession]);
 
   // misc functions
   const incrementSessionCount = () => {
@@ -34,14 +89,6 @@ export default function Pomodoro() {
     const newBreakDuration = event.target.value * 60;
     setBreakDuration(newBreakDuration);
   };
-  useEffect(() => {
-    if (!isRunning && isWorkSession) {
-      setTimeLeft(workDuration);
-      setInitTimeLeft(workDuration);
-    } else if (!isRunning && !isWorkSession) {
-      setTimeLeft(breakDuration);
-    }
-  }, [workDuration, breakDuration, isWorkSession]);
   
   const startTimer = () => {
     setIsRunning(true);
@@ -57,8 +104,10 @@ export default function Pomodoro() {
   const skipSession = () => {
     setIsRunning(false);
     if (isWorkSession) {
-      incrementSessionCount();
-      incrementSessionDuration(initTimeLeft, timeLeft);
+      if (timeLeft !== workDuration) {
+        incrementSessionCount();
+        incrementSessionDuration(initTimeLeft, timeLeft);
+      }
     }
     setIsWorkSession(prevIsWorkSession => {
       setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
@@ -86,7 +135,9 @@ export default function Pomodoro() {
           sessionCount={sessionCount}
           sessionDuration={sessionDuration}
         />
-        <Settings 
+        <Settings
+          workDuration={workDuration}
+          breakDuration={breakDuration}
           handleWorkInputChange={handleWorkInputChange}
           handleBreakInputChange={handleBreakInputChange}
         />
@@ -152,10 +203,10 @@ function Controls ({ startTimer, stopTimer, resetTimer, skipSession }) {
   // callbacks: onStart, onStop, onReset, onSkip
   return (
     <div className="m-4 flex justify-between text-xl">
-      <button onClick={startTimer} className="mx-4 py-2 px-3 bg-gray-200 rounded-xl">Start</button>
-      <button onClick={stopTimer} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Stop</button>
-      <button onClick={resetTimer} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Reset</button>
-      <button onClick={skipSession} className="mx-4 p-2 px-3 bg-gray-200 rounded-xl">Skip</button>
+      <button onClick={startTimer} className="mx-4 py-1 px-4 bg-gray-200 rounded-xl">Start</button>
+      <button onClick={stopTimer} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Stop</button>
+      <button onClick={resetTimer} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Reset</button>
+      <button onClick={skipSession} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Skip</button>
     </div>
   );
 }
@@ -177,7 +228,7 @@ function SessionCounter ({ sessionCount, sessionDuration }) {
   );
 }
 
-function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
+function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleBreakInputChange }) {
   // settings to adjust timer
   
   // props: workDuration, breakDuration
@@ -191,7 +242,7 @@ function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
           name="work-duration" 
           id="work-duration" 
           className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
-          defaultValue={25}
+          defaultValue={workDuration/60}
           onChange={handleWorkInputChange}
         />
         <label htmlFor="work-duration">Break Duration:</label>
@@ -200,7 +251,7 @@ function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
           name="break-duration" 
           id="break-duration" 
           className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
-          defaultValue={5}
+          defaultValue={breakDuration/60}
           onChange={handleBreakInputChange}
         />
       </div>
@@ -223,6 +274,7 @@ function Settings ({ handleWorkInputChange, handleBreakInputChange }) {
             <label htmlFor="opt-1">Option 4</label>
           </div> */}
         </div>
+        <button>Reset All</button>
       </div>
     </>
   );
