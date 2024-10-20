@@ -13,49 +13,65 @@ export default function Pomodoro() {
   const [isWorkSession, setIsWorkSession] = useState(true);
   const [sessionCount, setSessionCount] = useState(0);
   const [sessionDuration, setSessionDuration] = useState(0);
+  const [resetKey, setResetKey] = useState(0);
   
   // local storage reads (on mount)
   useEffect(() => {
     const savedWorkDuration = localStorage.getItem('workDuration');
-    console.log(`get from localStorage: ${savedWorkDuration}`);
-
-    if (savedWorkDuration) {
+    if (savedWorkDuration !== null) {
       setWorkDuration(JSON.parse(savedWorkDuration));
-      console.log(`setting workDuration to saved value: ${savedWorkDuration}`)
+    } else {
+      setWorkDuration(1500);
     }
-  }, []);
 
-  useEffect(() => {
     const savedBreakDuration = localStorage.getItem('breakDuration');
-    if (savedBreakDuration) setBreakDuration(JSON.parse(savedBreakDuration));
-    
+    if (savedBreakDuration !== null) {
+      setBreakDuration(JSON.parse(savedBreakDuration));
+    } else {
+      setBreakDuration(300);
+    }
+
     const savedSessionCount = localStorage.getItem('sessionCount');
-    if (savedSessionCount) setSessionCount(JSON.parse(savedSessionCount));
+    if (savedSessionCount !== null) {
+      setSessionCount(JSON.parse(savedSessionCount));
+    } else {
+      setSessionCount(0);
+    }
     
     const savedSessionDuration = localStorage.getItem('sessionDuration');
-    if (savedSessionDuration) setSessionDuration(JSON.parse(savedSessionDuration));
+    if (savedSessionDuration !== null) {
+      setSessionDuration(JSON.parse(savedSessionDuration));
+    } else {
+      setSessionDuration(0);
+    }
   }, []);
 
   // local storage writes
   useEffect(() => {
     if (workDuration !== null) {
-      // console.log(`workDuration before setItem: ${workDuration}`)
       localStorage.setItem('workDuration', JSON.stringify(workDuration));
-      // console.log(`set in localStorage: ${localStorage.getItem('workDuration')}`)
     }
   }, [workDuration]);
 
   useEffect(() => {
-    localStorage.setItem('breakDuration', JSON.stringify(breakDuration));
+    if (breakDuration !== null) {
+      localStorage.setItem('breakDuration', JSON.stringify(breakDuration));
+    }
   }, [breakDuration]);
 
   useEffect(() => {
-    localStorage.setItem('sessionCount', JSON.stringify(sessionCount));
+    if (sessionCount !== null) {
+      localStorage.setItem('sessionCount', JSON.stringify(sessionCount));
+    }
   }, [sessionCount]);
 
   useEffect(() => {
-    localStorage.setItem('sessionDuration', JSON.stringify(sessionDuration));
+    if (sessionDuration !== null) {
+      localStorage.setItem('sessionDuration', JSON.stringify(sessionDuration));
+    }
   }, [sessionDuration]);
+
+  // clear localStorage
 
   // useEffect for settings changes
   // this is necessary for realtime timer update, and proper total working time calculation 
@@ -89,7 +105,6 @@ export default function Pomodoro() {
     const newBreakDuration = event.target.value * 60;
     setBreakDuration(newBreakDuration);
   };
-  
   const startTimer = () => {
     setIsRunning(true);
     setInitTimeLeft(workDuration)
@@ -113,6 +128,13 @@ export default function Pomodoro() {
       setTimeLeft(prevIsWorkSession ? breakDuration : workDuration);
       return !prevIsWorkSession;
     });
+  };
+  const resetAll = () => {
+    localStorage.clear();
+    setWorkDuration(1500);
+    setBreakDuration(300);
+    setSessionCount(0);
+    setSessionDuration(0);
   };
 
   return (
@@ -140,6 +162,7 @@ export default function Pomodoro() {
           breakDuration={breakDuration}
           handleWorkInputChange={handleWorkInputChange}
           handleBreakInputChange={handleBreakInputChange}
+          resetAll={resetAll}
         />
       </div>
     </div>
@@ -228,7 +251,7 @@ function SessionCounter ({ sessionCount, sessionDuration }) {
   );
 }
 
-function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleBreakInputChange }) {
+function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleBreakInputChange, resetAll }) {
   // settings to adjust timer
   
   // props: workDuration, breakDuration
@@ -274,7 +297,10 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             <label htmlFor="opt-1">Option 4</label>
           </div> */}
         </div>
-        <button>Reset All</button>
+        <button 
+          className="mx-4 py-1 px-4 bg-gray-800 rounded-lg text-white text-xs"
+          onClick={resetAll}
+        >Reset All</button>
       </div>
     </>
   );
