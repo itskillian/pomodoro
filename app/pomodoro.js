@@ -138,8 +138,8 @@ export default function Pomodoro() {
   };
 
   return (
-    <div className="container mx-auto flex h-screen text-center text-black">
-      <div className="max-w-1/2 m-auto pb-16">
+    <div className="min-w-80 container mx-auto flex h-screen text-center text-gray-800">
+      <div className="w-full max-w-[480px] m-auto pb-16">
         <Timer
           timeLeft={timeLeft}
           isWorkSession={isWorkSession}
@@ -225,11 +225,11 @@ function Controls ({ startTimer, stopTimer, resetTimer, skipSession }) {
   // props: isRunning, isWorkSession
   // callbacks: onStart, onStop, onReset, onSkip
   return (
-    <div className="m-4 flex justify-between text-xl">
-      <button onClick={startTimer} className="mx-4 py-1 px-4 bg-gray-200 rounded-xl">Start</button>
-      <button onClick={stopTimer} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Stop</button>
-      <button onClick={resetTimer} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Reset</button>
-      <button onClick={skipSession} className="mx-4 p-1 px-4 bg-gray-200 rounded-xl">Skip</button>
+    <div className="m-4 flex justify-evenly text-xl">
+      <button onClick={startTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Start</button>
+      <button onClick={stopTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Stop</button>
+      <button onClick={resetTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Reset</button>
+      <button onClick={skipSession} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Skip</button>
     </div>
   );
 }
@@ -238,7 +238,7 @@ function SessionCounter ({ sessionCount, sessionDuration }) {
   // track sessions & duration
   let formattedSessionDuration = formatTime(sessionDuration);
   return (
-    <div className="min-w-max flex justify-evenly m-4">
+    <div className="m-4 flex justify-evenly">
       <div className="flex flex-col">
         <div className="font-bold">Session Count</div>
         <div className="text-2xl font-bold">{ sessionCount }</div>
@@ -258,25 +258,29 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
   // callbacks: onWorkDurationChange, onBreakDurationChange
   return (
     <>
-      <div className="flex items-center justify-between">
-        <label htmlFor="work-duration">Work Duration:</label>
-        <input 
-          type="number" 
-          name="work-duration" 
-          id="work-duration" 
-          className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
-          defaultValue={workDuration/60}
-          onChange={handleWorkInputChange}
-        />
-        <label htmlFor="work-duration">Break Duration:</label>
-        <input 
-          type="number" 
-          name="break-duration" 
-          id="break-duration" 
-          className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
-          defaultValue={breakDuration/60}
-          onChange={handleBreakInputChange}
-        />
+      <div className="m-4 flex  justify-between">
+        <div className="w-1/2 flex items-center justify-evenly">
+          <label className="max-w-24" htmlFor="work-duration">Work Duration:</label>
+          <input 
+            type="number" 
+            name="work-duration" 
+            id="work-duration" 
+            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
+            defaultValue={workDuration/60}
+            onChange={handleWorkInputChange}
+          />
+        </div>
+        <div className="w-1/2 flex items-center justify-evenly">
+          <label className="max-w-24" htmlFor="work-duration">Break Duration:</label>
+          <input 
+            type="number" 
+            name="break-duration" 
+            id="break-duration" 
+            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
+            defaultValue={breakDuration/60}
+            onChange={handleBreakInputChange}
+          />
+        </div>
       </div>
       <div>
         <div className="flex justify-evenly m-4">
