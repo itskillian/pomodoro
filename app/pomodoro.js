@@ -139,7 +139,7 @@ export default function Pomodoro() {
 
   return (
     <div className="min-w-80 container mx-auto flex h-screen text-center text-gray-800">
-      <div className="w-full max-w-[480px] m-auto pb-16">
+      <div className="w-full max-w-[480px] m-auto">
         <Timer
           timeLeft={timeLeft}
           isWorkSession={isWorkSession}
