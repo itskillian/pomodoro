@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import { FaHome, FaRegClock } from "react-icons/fa";
 
 export default function Pomodoro() {
+  // const vars
+  const INIT_WORK_DURATION = 1500;
+  const INIT_BREAK_DURATION = 300;
+  
   // state
-  const [workDuration, setWorkDuration] = useState(1500);
-  const [breakDuration, setBreakDuration] = useState(300);
+  const [workDuration, setWorkDuration] = useState(INIT_WORK_DURATION);
+  const [breakDuration, setBreakDuration] = useState(INIT_BREAK_DURATION);
   const [timeLeft, setTimeLeft] = useState(workDuration);
   const [initTimeLeft, setInitTimeLeft] = useState(workDuration);
   const [isRunning, setIsRunning] = useState(false);
@@ -21,14 +25,14 @@ export default function Pomodoro() {
     if (savedWorkDuration !== null) {
       setWorkDuration(JSON.parse(savedWorkDuration));
     } else {
-      setWorkDuration(1500);
+      setWorkDuration(INIT_WORK_DURATION);
     }
 
     const savedBreakDuration = localStorage.getItem('breakDuration');
     if (savedBreakDuration !== null) {
       setBreakDuration(JSON.parse(savedBreakDuration));
     } else {
-      setBreakDuration(300);
+      setBreakDuration(INIT_BREAK_DURATION);
     }
 
     const savedSessionCount = localStorage.getItem('sessionCount');
@@ -51,7 +55,7 @@ export default function Pomodoro() {
     if (workDuration !== null) {
       localStorage.setItem('workDuration', JSON.stringify(workDuration));
     }
-  }, [workDuration]);
+  }, [workDuration, setWorkDuration]);
 
   useEffect(() => {
     if (breakDuration !== null) {
@@ -84,7 +88,9 @@ export default function Pomodoro() {
       // set var for sessionDuration calcs
       if (isWorkSession) setInitTimeLeft(workDuration);
     }
-  }, [workDuration, breakDuration, isWorkSession]);
+  // no isRunning dependency because it will cause the timer to reset when user pauses
+  // we only want the timer to update when the user changes any duration settings
+  }, [workDuration, breakDuration]); 
 
   // misc functions
   const incrementSessionCount = () => {
@@ -131,8 +137,11 @@ export default function Pomodoro() {
   };
   const resetAll = () => {
     localStorage.clear();
-    setWorkDuration(1500);
-    setBreakDuration(300);
+    setIsRunning(false);
+    setIsWorkSession(true);
+    setTimeLeft(INIT_WORK_DURATION);
+    setWorkDuration(INIT_WORK_DURATION);
+    setBreakDuration(INIT_BREAK_DURATION);
     setSessionCount(0);
     setSessionDuration(0);
   };
@@ -169,26 +178,26 @@ export default function Pomodoro() {
   );
 }
 
-function SideBar () {
-  const SideBarIcon = ({ icon, text = 'tooltip' }) => (
-    <div className="sidebar-icon group">
-      {icon}
+// function SideBar () {
+//   const SideBarIcon = ({ icon, text = 'tooltip' }) => (
+//     <div className="sidebar-icon group">
+//       {icon}
 
-      <span class="sidebar-tooltip group-hover:scale-100">
-        {text}
-      </span>
-    </div>
-  );
-  return (
-    <div className="
-      fixed top-0 left-0 h-screen w-16 m-0 p-0
-      flex flex-col
-      bg-gray-800 text-white shadow-lg">
-        <SideBarIcon icon={<FaHome size="28" />} />
-        <SideBarIcon icon={<FaRegClock size="28" />} />
-    </div>
-  );
-}
+//       <span class="sidebar-tooltip group-hover:scale-100">
+//         {text}
+//       </span>
+//     </div>
+//   );
+//   return (
+//     <div className="
+//       fixed top-0 left-0 h-screen w-16 m-0 p-0
+//       flex flex-col
+//       bg-gray-800 text-white shadow-lg">
+//         <SideBarIcon icon={<FaHome size="28" />} />
+//         <SideBarIcon icon={<FaRegClock size="28" />} />
+//     </div>
+//   );
+// }
 
 function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, skipSession }) {
   // countdown timer
@@ -253,6 +262,8 @@ function SessionCounter ({ sessionCount, sessionDuration }) {
 
 function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleBreakInputChange, resetAll }) {
   // settings to adjust timer
+  let workDurationMinutes = workDuration/60;
+  let breakDurationMinutes = breakDuration/60;
   
   // props: workDuration, breakDuration
   // callbacks: onWorkDurationChange, onBreakDurationChange
@@ -266,7 +277,8 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             name="work-duration" 
             id="work-duration" 
             className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
-            defaultValue={workDuration/60}
+            defaultValue={workDurationMinutes}
+            value={workDurationMinutes}
             onChange={handleWorkInputChange}
           />
         </div>
@@ -277,12 +289,17 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             name="break-duration" 
             id="break-duration" 
             className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
-            defaultValue={breakDuration/60}
+            defaultValue={breakDurationMinutes}
+            value={breakDurationMinutes}
             onChange={handleBreakInputChange}
           />
         </div>
       </div>
-      <div>
+      <button 
+          className="mx-4 py-1 px-4 bg-gray-800 rounded-lg text-white text-xs"
+          onClick={resetAll}
+        >Reset All</button>
+      {/* <div>
         <div className="flex justify-evenly m-4">
           <div>
             <input className="mr-1" type="checkbox" id="opt-1"/>
@@ -292,20 +309,16 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             <input className="mr-1"type="checkbox" id="opt-2"/>
             <label htmlFor="opt-1">Auto work</label>
           </div>
-          {/* <div>
+          <div>
             <input className="mr-1"type="checkbox" id="opt-3"/>
             <label htmlFor="opt-1">Option 3</label>
           </div>
           <div>
             <input className="mr-1"type="checkbox" id="opt-4"/>
             <label htmlFor="opt-1">Option 4</label>
-          </div> */}
+          </div>
         </div>
-        <button 
-          className="mx-4 py-1 px-4 bg-gray-800 rounded-lg text-white text-xs"
-          onClick={resetAll}
-        >Reset All</button>
-      </div>
+      </div> */}
     </>
   );
 }
