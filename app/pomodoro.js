@@ -276,8 +276,7 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             type="number" 
             name="work-duration" 
             id="work-duration" 
-            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
-            defaultValue={workDurationMinutes}
+            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={workDurationMinutes}
             onChange={handleWorkInputChange}
           />
@@ -288,8 +287,7 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             type="number" 
             name="break-duration" 
             id="break-duration" 
-            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"    
-            defaultValue={breakDurationMinutes}
+            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={breakDurationMinutes}
             onChange={handleBreakInputChange}
           />
