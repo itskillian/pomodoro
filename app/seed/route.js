@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { db } from '@vercel/postgres';
-import { users } from '@/app/lib/placeholder-data';
+import { users, sessions, visitors } from '@/app/lib/placeholder-data';
 
 const client = await db.connect();
 
@@ -35,8 +35,8 @@ async function seedSessions() {
       user_id UUID NOT NULL,
       time INT NOT NULL,
       work_duration INT NOT NULL,
-      break_duration INT NOt NULL,
-    )
+      break_duration INT NOT NULL
+    );
   `;
   const insertedSessions = await Promise.all(
     sessions.map(
@@ -62,8 +62,8 @@ async function seedVisitors() {
   const insertedVisitors = await Promise.all(
     visitors.map(
       (visitor) => client.sql`
-        INSERT INTO revenue (month, visitors)
-        VALUES (${visitor.month}, ${visitor.revenue})
+        INSERT INTO visitors (month, visitors)
+        VALUES (${visitor.month}, ${visitor.visitors})
         ON CONFLICT (month) DO NOTHING;
       `,
     ),
@@ -76,7 +76,8 @@ export async function GET() {
   try {
     await client.sql`BEGIN`;
     await seedUsers();
-    await seedStats();
+    await seedSessions();
+    await seedVisitors();
     await client.sql`COMMIT`;
 
     return Response.json({ message: 'Database seeded successfully' });
