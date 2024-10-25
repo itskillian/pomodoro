@@ -173,31 +173,32 @@ export default function Pomodoro() {
           handleBreakInputChange={handleBreakInputChange}
           resetAll={resetAll}
         />
+        <Statistics/>
       </div>
     </div>
   );
 }
 
-// function SideBar () {
-//   const SideBarIcon = ({ icon, text = 'tooltip' }) => (
-//     <div className="sidebar-icon group">
-//       {icon}
+function SideBar () {
+  const SideBarIcon = ({ icon, text = 'tooltip' }) => (
+    <div className="sidebar-icon group">
+      {icon}
 
-//       <span class="sidebar-tooltip group-hover:scale-100">
-//         {text}
-//       </span>
-//     </div>
-//   );
-//   return (
-//     <div className="
-//       fixed top-0 left-0 h-screen w-16 m-0 p-0
-//       flex flex-col
-//       bg-gray-800 text-white shadow-lg">
-//         <SideBarIcon icon={<FaHome size="28" />} />
-//         <SideBarIcon icon={<FaRegClock size="28" />} />
-//     </div>
-//   );
-// }
+      <span class="sidebar-tooltip group-hover:scale-100">
+        {text}
+      </span>
+    </div>
+  );
+  return (
+    <div className="
+      fixed top-0 left-0 h-screen w-16 m-0 p-0
+      flex flex-col
+      bg-gray-800 text-white shadow-lg">
+        <SideBarIcon icon={<FaHome size="28" />} />
+        <SideBarIcon icon={<FaRegClock size="28" />} />
+    </div>
+  );
+}
 
 function Timer ({ timeLeft, isWorkSession, isRunning, setTimeLeft, skipSession }) {
   // countdown timer
@@ -322,8 +323,6 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
 }
 
 function Statistics () {
-  // average time per work session
-  // total break time
 }
 
 function formatTime(seconds) {
