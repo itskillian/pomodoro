@@ -104,16 +104,20 @@ export default function Pomodoro() {
   
   // handlers
   const handleWorkInputChange = (event) => {
-    const newWorkDuration = event.target.value * 60;
+    const newWorkDuration = Math.max(event.target.value * 60, 60); // Ensure at least 1 minute (60 seconds)
     setWorkDuration(newWorkDuration);
-    };
+  };
   const handleBreakInputChange = (event) => {
-    const newBreakDuration = event.target.value * 60;
+    const newBreakDuration = Math.max(event.target.value * 60, 60); // Ensure at least 1 minute (60 seconds)
     setBreakDuration(newBreakDuration);
   };
   const startTimer = () => {
+    if (workDuration === 0 || breakDuration === 0) {
+      alert("Please set a work or break duration greater than 0.");
+      return; // Prevent starting the timer
+    }
     setIsRunning(true);
-    setInitTimeLeft(workDuration)
+    setInitTimeLeft(workDuration);
   };
   const stopTimer = () => {
     setIsRunning(false);
@@ -123,6 +127,11 @@ export default function Pomodoro() {
     setTimeLeft(isWorkSession ? workDuration : breakDuration);
   };
   const skipSession = () => {
+    if (workDuration === 0 && breakDuration === 0) {
+      alert("Please set a work or break duration greater than 0 to skip the session.");
+      return; // Prevent switching sessions
+    }
+    
     setIsRunning(false);
     if (isWorkSession) {
       if (timeLeft !== workDuration) {
@@ -147,7 +156,7 @@ export default function Pomodoro() {
   };
 
   return (
-    <div className="min-w-80 container mx-auto flex h-screen text-center text-gray-800">
+    <div className="min-w-80 container mx-auto flex h-screen text-center text-gray-800 dark:text-gray-200">
       <div className="w-full max-w-[480px] m-auto">
         <Timer
           timeLeft={timeLeft}
@@ -236,10 +245,10 @@ function Controls ({ startTimer, stopTimer, resetTimer, skipSession }) {
   // callbacks: onStart, onStop, onReset, onSkip
   return (
     <div className="m-4 flex justify-evenly text-xl">
-      <button onClick={startTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Start</button>
-      <button onClick={stopTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Stop</button>
-      <button onClick={resetTimer} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Reset</button>
-      <button onClick={skipSession} className="py-1 px-3 bg-gray-200 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Skip</button>
+      <button onClick={startTimer} className="py-1 px-3 bg-gray-200 dark:bg-gray-800 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Start</button>
+      <button onClick={stopTimer} className="py-1 px-3 bg-gray-200 dark:bg-gray-800 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Stop</button>
+      <button onClick={resetTimer} className="py-1 px-3 bg-gray-200 dark:bg-gray-800 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Reset</button>
+      <button onClick={skipSession} className="py-1 px-3 bg-gray-200 dark:bg-gray-800 rounded-lg drop-shadow-md outline-2 outline-gray-800 hover:outline active:bg-gray-800 active:text-white active">Skip</button>
     </div>
   );
 }
@@ -277,9 +286,10 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             type="number" 
             name="work-duration" 
             id="work-duration" 
-            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-14 p-1 text-center text-gray-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={workDurationMinutes}
             onChange={handleWorkInputChange}
+            min="1"
           />
         </div>
         <div className="w-1/2 flex items-center justify-evenly">
@@ -288,9 +298,10 @@ function Settings ({ workDuration, breakDuration, handleWorkInputChange, handleB
             type="number" 
             name="break-duration" 
             id="break-duration" 
-            className="w-14 p-1 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-14 p-1 text-center text-gray-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             value={breakDurationMinutes}
             onChange={handleBreakInputChange}
+            min="1"
           />
         </div>
       </div>
